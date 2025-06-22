@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Importación desde China</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏭 Calculadora de Importación desde China</h1>
+            <p>Herramienta completa para calcular costos de importación y precios de venta</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'fabricacion')">🏭 Fabricación China</button>
+            <button class="tab" onclick="openTab(event, 'importacion')">🚢 Importación</button>
+            <button class="tab" onclick="openTab(event, 'locales')">📦 Costos Locales</button>
+            <button class="tab" onclick="openTab(event, 'precios')">💰 Análisis Precios</button>
+            <button class="tab" onclick="openTab(event, 'resultados')">📊 Resultados</button>
+        </div>
+        
+        <!-- Pestaña 1: Fabricación en China -->
+        <div id="fabricacion" class="tab-content active">
+            <h2 class="section-title">🏭 Costos de Fabricación en China</h2>
+            
+            <div class="card">
+                <h3>📦 Productos a Importar</h3>
+                <div id="productos-container">
+                    <!-- Los productos se agregan dinámicamente -->
+                </div>
+                <button type="button" class="btn btn-primary" onclick="agregarProducto()">+ Agregar Producto</button>
+            </div>
+            
+            <div class="card">
+                <h3>💱 Configuración General</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="tipoCambio">Tipo de Cambio (USD/CNY)</label>
+                        <input type="number" id="tipoCambio" value="7.2" step="0.01">
+                        <div class="tooltip">Tipo de cambio actual del yuan a dólar</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="margenProveedor">Margen del Proveedor (%)</label>
+                        <input type="number" id="margenProveedor" value="15" step="0.1">
+                        <div class="tooltip">Margen adicional que cobra tu proveedor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña 2: Importación y Logística -->
+        <div id="importacion" class="tab-content">
+            <h2 class="section-title">🚢 Costos de Importación y Logística</h2>
+            
+            <div class="card">
+                <h3>🌊 Envío Internacional (LCL)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="costoEnvioTotal">Costo Total de Envío ($)</label>
+                        <input type="number" id="costoEnvioTotal" value="1500" step="0.01">
+                        <div class="tooltip">Costo total del envío marítimo LCL</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="volumenTotal">Volumen Total (m³)</label>
+                        <input type="number" id="volumenTotal" value="5" step="0.01">
+                        <div class="tooltip">Volumen total del envío en metros cúbicos</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="seguroMercancia">Seguro de Mercancía (%)</label>
+                        <input type="number" id="seguroMercancia" value="0.5" step="0.1">
+                        <div class="tooltip">Porcentaje del valor CIF para seguro</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tiempoTransito">Tiempo de Tránsito (días)</label>
+                        <input type="number" id="tiempoTransito" value="35" step="1">
+                        <div class="tooltip">Días promedio de China a tu puerto</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🏛️ Aduanas e Impuestos</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="arancelImportacion">Arancel de Importación (%)</label>
+                        <input type="number" id="arancelImportacion" value="8" step="0.1">
+                        <div class="tooltip">Porcentaje del valor CIF</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ivaImportacion">IVA Importación (%)</label>
+                        <input type="number" id="ivaImportacion" value="19" step="0.1">
+                        <div class="tooltip">IVA sobre valor CIF + arancel</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gastosAduanales">Gastos Aduanales Fijos ($)</label>
+                        <input type="number" id="gastosAduanales" value="200" step="0.01">
+                        <div class="tooltip">Gastos fijos de despacho aduanal</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="certificaciones">Certificaciones/Inspecciones ($)</label>
+                        <input type="number" id="certificaciones" value="150" step="0.01">
+                        <div class="tooltip">Invima, ICA, o certificaciones requeridas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña 3: Costos Locales -->
+        <div id="locales" class="tab-content">
+            <h2 class="section-title">📦 Costos Locales y Operativos</h2>
+            
+            <div class="card">
+                <h3>🚛 Transporte y Almacenamiento</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="transporteLocal">Transporte Puerto-Bodega ($)</label>
+                        <input type="number" id="transporteLocal" value="300" step="0.01">
+                        <div class="tooltip">Costo de transporte del puerto a tu bodega</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="almacenamientoMensual">Almacenamiento Mensual ($)</label>
+                        <input type="number" id="almacenamientoMensual" value="500" step="0.01">
+                        <div class="tooltip">Costo mensual de almacenamiento</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mesesAlmacenamiento">Meses de Almacenamiento</label>
+                        <input type="number" id="mesesAlmacenamiento" value="3" step="0.1">
+                        <div class="tooltip">Tiempo promedio de inventario</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="manipulacion">Manipulación y Descarga ($)</label>
+                        <input type="number" id="manipulacion" value="200" step="0.01">
+                        <div class="tooltip">Costos de descarga y manipulación</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💼 Costos Operativos</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gastosFinancieros">Gastos Financieros ($)</label>
+                        <input type="number" id="gastosFinancieros" value="100" step="0.01">
+                        <div class="tooltip">Costos de cartas de crédito, transferencias</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gastosAdministrativos">Gastos Administrativos ($)</label>
+                        <input type="number" id="gastosAdministrativos" value="200" step="0.01">
+                        <div class="tooltip">Gastos administrativos del proceso</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="otrosGastos">Otros Gastos ($)</label>
+                        <input type="number" id="otrosGastos" value="0" step="0.01">
+                        <div class="tooltip">Cualquier otro gasto no contemplado</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="merma">Merma/Pérdidas (%)</label>
+                        <input type="number" id="merma" value="2" step="0.1">
+                        <div class="tooltip">Porcentaje de productos dañados/perdidos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña 4: Análisis de Precios -->
+        <div id="precios" class="tab-content">
+            <h2 class="section-title">💰 Análisis de Precios de Venta</h2>
+            
+            <div class="card">
+                <h3>🎯 Objetivos de Venta</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="margenObjetivo">Margen de Ganancia Objetivo (%)</label>
+                        <input type="number" id="margenObjetivo" value="50" step="1">
+                        <div class="tooltip">Margen de ganancia deseado sobre el costo total</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ventasMensuales">Ventas Mensuales Objetivo (unidades)</label>
+                        <input type="number" id="ventasMensuales" value="100" step="1">
+                        <div class="tooltip">Unidades que esperas vender por mes</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🛒 Costos de Venta Online</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="comisionPlataforma">Comisión Plataforma (%)</label>
+                        <input type="number" id="comisionPlataforma" value="5" step="0.1">
+                        <div class="tooltip">MercadoLibre, Amazon, etc.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comisionPago">Comisión de Pago (%)</label>
+                        <input type="number" id="comisionPago" value="4" step="0.1">
+                        <div class="tooltip">PayU, PayPal, tarjetas de crédito</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="envioCliente">Envío al Cliente ($)</label>
+                        <input type="number" id="envioCliente" value="8" step="0.01">
+                        <div class="tooltip">Costo promedio de envío al cliente final</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="empaque">Empaque de Venta ($)</label>
+                        <input type="number" id="empaque" value="2" step="0.01">
+                        <div class="tooltip">Costo de empaque para venta</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="publicidad">Publicidad por Venta ($)</label>
+                        <input type="number" id="publicidad" value="10" step="0.01">
+                        <div class="tooltip">Costo de adquisición por cliente (CAC)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="devolucion">Tasa de Devolución (%)</label>
+                        <input type="number" id="devolucion" value="3" step="0.1">
+                        <div class="tooltip">Porcentaje de productos devueltos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña 5: Resultados -->
+        <div id="resultados" class="tab-content">
+            <h2 class="section-title">📊 Resultados y Análisis</h2>
+            
+            <div class="alert alert-info">
+                <strong>💡 Resumen:</strong> Aquí encontrarás el análisis completo de costos y precios recomendados para cada producto.
+            </div>
+            
+            <div class="results-grid" id="resultados-generales">
+                <!-- Los resultados se generan dinámicamente -->
+            </div>
+            
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h3>📈 Distribución de Costos</h3>
+                    <canvas id="costosChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>💰 Análisis de Márgenes</h3>
+                    <canvas id="margenesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📋 Detalle por Producto</h3>
+                <table class="summary-table" id="tabla-resultados">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Costo Total</th>
+                            <th>Precio Sugerido</th>
+                            <th>Margen</th>
+                            <th>Ganancia/Unidad</th>
+                            <th>Ingresos Mensuales</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let productos = [];
+        let costosGlobales = {};
+        let resultados = {};
+        
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            agregarProducto(); // Agregar un producto inicial
+            setupEventListeners();
+            calcularTodo();
+        });
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', calcularTodo);
+            });
+        }
+        
+        // Función para cambiar pestañas
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            const tablinks = document.getElementsByClassName("tab");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            if (tabName === 'resultados') {
+                calcularTodo();
+                setTimeout(mostrarResultados, 100);
+            }
+        }
+        
+        // Agregar producto
+        function agregarProducto() {
+            const container = document.getElementById('productos-container');
+            const index = productos.length;
+            
+            const productoDiv = document.createElement('div');
+            productoDiv.className = 'product-row';
+            productoDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="nombre_${index}" placeholder="Ej: Auriculares Bluetooth" onchange="actualizarProducto(${index})">
+                </div>
+                <div class="form-group">
+                    <label>Precio FOB ($)</label>
+                    <input type="number" id="precio_${index}" value="15" step="0.01" onchange="actualizarProducto(${index})">
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidad_${index}" value="100" step="1" onchange="actualizarProducto(${index})">
+                </div>
+                <div class="form-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="peso_${index}" value="0.5" step="0.01" onchange="actualizarProducto(${index})">
+                </div>
+                <div class="form-group">
+                    <label>Volumen (m³)</label>
+                    <input type="number" id="volumen_${index}" value="0.1" step="0.01" onchange="actualizarProducto(${index})">
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-danger" onclick="eliminarProducto(${index})">🗑️</button>
+                </div>
+            `;
+            
+            container.appendChild(productoDiv);
+            
+            productos.push({
+                index: index,
+                nombre: '',
+                precio: 15,
+                cantidad: 100,
+                peso: 0.5,
+                volumen: 0.1
+            });
+            
+            // Configurar event listeners para el nuevo producto
+            setupEventListeners();
+        }
+        
+        // Actualizar producto
+        function actualizarProducto(index) {
+            if (productos[index]) {
+                productos[index].nombre = document.getElementById(`nombre_${index}`).value || `Producto ${index + 1}`;
+                productos[index].precio = parseFloat(document.getElementById(`precio_${index}`).value) || 0;
+                productos[index].cantidad = parseInt(document.getElementById(`cantidad_${index}`).value) || 0;
+                productos[index].peso = parseFloat(document.getElementById(`peso_${index}`).value) || 0;
+                productos[index].volumen = parseFloat(document.getElementById(`volumen_${index}`).value) || 0;
+                calcularTodo();
+            }
+        }
+        
+        // Eliminar producto
+        function eliminarProducto(index) {
+            if (productos.length > 1) {
+                productos.splice(index, 1);
+                const container = document.getElementById('productos-container');
+                container.innerHTML = '';
+                
+                // Recrear todos los productos con nuevos índices
+                const productosTemp = [...productos];
+                productos = [];
+                productosTemp.forEach((producto, i) => {
+                    agregarProducto();
+                    document.getElementById(`nombre_${i}`).value = producto.nombre;
+                    document.getElementById(`precio_${i}`).value = producto.precio;
+                    document.getElementById(`cantidad_${i}`).value = producto.cantidad;
+                    document.getElementById(`peso_${i}`).value = producto.peso;
+                    document.getElementById(`volumen_${i}`).value = producto.volumen;
+                    actualizarProducto(i);
+                });
+                calcularTodo();
+            }
+        }
+        
+        // Calcular todo
+        function calcularTodo() {
+            calcularCostosGlobales();
+            calcularCostosProductos();
+            if (document.getElementById('resultados').classList.contains('active')) {
+                mostrarResultados();
+            }
+        }
+        
+        // Calcular costos globales
+        function calcularCostosGlobales() {
+            // Obtener valores de inputs
+            costosGlobales = {
+                // Fabricación
+                tipoCambio: parseFloat(document.getElementById('tipoCambio')?.value) || 7.2,
+                margenProveedor: parseFloat(document.getElementById('margenProveedor')?.value) || 15,
+                
+                // Importación
+                costoEnvioTotal: parseFloat(document.getElementById('costoEnvioTotal')?.value) || 1500,
+                volumenTotal: parseFloat(document.getElementById('volumenTotal')?.value) || 5,
+                seguroMercancia: parseFloat(document.getElementById('seguroMercancia')?.value) || 0.5,
+                tiempoTransito: parseFloat(document.getElementById('tiempoTransito')?.value) || 35,
+                
+                // Aduanas
+                arancelImportacion: parseFloat(document.getElementById('arancelImportacion')?.value) || 8,
+                ivaImportacion: parseFloat(document.getElementById('ivaImportacion')?.value) || 19,
+                gastosAduanales: parseFloat(document.getElementById('gastosAduanales')?.value) || 200,
+                certificaciones: parseFloat(document.getElementById('certificaciones')?.value) || 150,
+                
+                // Locales
+                transporteLocal: parseFloat(document.getElementById('transporteLocal')?.value) || 300,
+                almacenamientoMensual: parseFloat(document.getElementById('almacenamientoMensual')?.value) || 500,
+                mesesAlmacenamiento: parseFloat(document.getElementById('mesesAlmacenamiento')?.value) || 3,
+                manipulacion: parseFloat(document.getElementById('manipulacion')?.value) || 200,
+                gastosFinancieros: parseFloat(document.getElementById('gastosFinancieros')?.value) || 100,
+                gastosAdministrativos: parseFloat(document.getElementById('gastosAdministrativos')?.value) || 200,
+                otrosGastos: parseFloat(document.getElementById('otrosGastos')?.value) || 0,
+                merma: parseFloat(document.getElementById('merma')?.value) || 2,
+                
+                // Precios
+                margenObjetivo: parseFloat(document.getElementById('margenObjetivo')?.value) || 50,
+                ventasMensuales: parseFloat(document.getElementById('ventasMensuales')?.value) || 100,
+                comisionPlataforma: parseFloat(document.getElementById('comisionPlataforma')?.value) || 5,
+                comisionPago: parseFloat(document.getElementById('comisionPago')?.value) || 4,
+                envioCliente: parseFloat(document.getElementById('envioCliente')?.value) || 8,
+                empaque: parseFloat(document.getElementById('empaque')?.value) || 2,
+                publicidad: parseFloat(document.getElementById('publicidad')?.value) || 10,
+                devolucion: parseFloat(document.getElementById('devolucion')?.value) || 3
+            };
+        }
+        
+        // Calcular costos por producto
+        function calcularCostosProductos() {
+            resultados = {};
+            
+            productos.forEach((producto, index) => {
+                if (producto.cantidad > 0) {
+                    const resultado = calcularProducto(producto, index);
+                    resultados[index] = resultado;
+                }
+            });
+        }
+        
+        // Calcular costos de un producto específico
+        function calcularProducto(producto, index) {
+            const costos = {};
+            
+            // 1. Costo FOB en USD
+            costos.fob = producto.precio * producto.cantidad;
+            
+            // 2. Costo CIF (FOB + Flete + Seguro)
+            const proporcionVolumen = producto.volumen / costosGlobales.volumenTotal;
+            costos.flete = costosGlobales.costoEnvioTotal * proporcionVolumen;
+            costos.seguro = (costos.fob + costos.flete) * (costosGlobales.seguroMercancia / 100);
+            costos.cif = costos.fob + costos.flete + costos.seguro;
+            
+            // 3. Impuestos y aranceles
+            costos.arancel = costos.cif * (costosGlobales.arancelImportacion / 100);
+            costos.iva = (costos.cif + costos.arancel) * (costosGlobales.ivaImportacion / 100);
+            
+            // 4. Gastos fijos distribuidos
+            const totalUnidades = productos.reduce((sum, p) => sum + p.cantidad, 0);
+            const proporcionUnidades = producto.cantidad / totalUnidades;
+            
+            costos.gastosAduanales = costosGlobales.gastosAduanales * proporcionUnidades;
+            costos.certificaciones = costosGlobales.certificaciones * proporcionUnidades;
+            costos.transporteLocal = costosGlobales.transporteLocal * proporcionUnidades;
+            costos.manipulacion = costosGlobales.manipulacion * proporcionUnidades;
+            costos.gastosFinancieros = costosGlobales.gastosFinancieros * proporcionUnidades;
+            costos.gastosAdministrativos = costosGlobales.gastosAdministrativos * proporcionUnidades;
+            costos.otrosGastos = costosGlobales.otrosGastos * proporcionUnidades;
+            
+            // 5. Almacenamiento
+            costos.almacenamiento = (costosGlobales.almacenamientoMensual * costosGlobales.mesesAlmacenamiento) * proporcionUnidades;
+            
+            // 6. Costo total de importación
+            costos.totalImportacion = costos.cif + costos.arancel + costos.iva + 
+                                    costos.gastosAduanales + costos.certificaciones + 
+                                    costos.transporteLocal + costos.manipulacion + 
+                                    costos.gastosFinancieros + costos.gastosAdministrativos + 
+                                    costos.otrosGastos + costos.almacenamiento;
+            
+            // 7. Costo por unidad
+            costos.costoUnitario = costos.totalImportacion / producto.cantidad;
+            
+            // 8. Ajuste por merma
+            const unidadesEfectivas = producto.cantidad * (1 - costosGlobales.merma / 100);
+            costos.costoUnitarioConMerma = costos.totalImportacion / unidadesEfectivas;
+            
+            // 9. Costos de venta
+            costos.envioCliente = costosGlobales.envioCliente;
+            costos.empaque = costosGlobales.empaque;
+            costos.publicidad = costosGlobales.publicidad;
+            
+            // 10. Costo total por unidad
+            costos.costoTotalUnitario = costos.costoUnitarioConMerma + costos.envioCliente + 
+                                      costos.empaque + costos.publicidad;
+            
+            // 11. Precio de venta
+            let precioVenta = costos.costoTotalUnitario / (1 - costosGlobales.margenObjetivo / 100);
+            
+            // Ajustar por comisiones
+            const comisionTotal = costosGlobales.comisionPlataforma + costosGlobales.comisionPago + costosGlobales.devolucion;
+            precioVenta = precioVenta / (1 - comisionTotal / 100);
+            
+            costos.precioVenta = precioVenta;
+            costos.comisiones = precioVenta * (comisionTotal / 100);
+            
+            // 12. Análisis de rentabilidad
+            costos.ingresoNeto = precioVenta - costos.comisiones;
+            costos.gananciaUnitaria = costos.ingresoNeto - costos.costoTotalUnitario;
+            costos.margenReal = (costos.gananciaUnitaria / costos.ingresoNeto) * 100;
+            costos.roi = (costos.gananciaUnitaria / costos.costoTotalUnitario) * 100;
+            
+            // 13. Proyecciones mensuales
+            costos.ventasMensuales = costosGlobales.ventasMensuales;
+            costos.ingresosMensuales = costos.ingresoNeto * costos.ventasMensuales;
+            costos.gananciasMensuales = costos.gananciaUnitaria * costos.ventasMensuales;
+            
+            return {
+                producto: producto,
+                costos: costos
+            };
+        }
+        
+        // Mostrar resultados
+        function mostrarResultados() {
+            mostrarResultadosGenerales();
+            mostrarTablaDetallada();
+            mostrarGraficos();
+        }
+        
+        // Mostrar resultados generales
+        function mostrarResultadosGenerales() {
+            const container = document.getElementById('resultados-generales');
+            
+            // Calcular totales
+            let totalInversion = 0;
+            let totalIngresosMensuales = 0;
+            let totalGananciasMensuales = 0;
+            let promedioMargen = 0;
+            let cantidadProductos = 0;
+            
+            Object.values(resultados).forEach(resultado => {
+                totalInversion += resultado.costos.totalImportacion;
+                totalIngresosMensuales += resultado.costos.ingresosMensuales;
+                totalGananciasMensuales += resultado.costos.gananciasMensuales;
+                promedioMargen += resultado.costos.margenReal;
+                cantidadProductos++;
+            });
+            
+            promedioMargen = cantidadProductos > 0 ? promedioMargen / cantidadProductos : 0;
+            
+            container.innerHTML = `
+                <div class="result-card">
+                    <h4>💰 Inversión Total</h4>
+                    <div class="value">${formatCurrency(totalInversion)}</div>
+                    <div class="subtitle">Costo total de importación</div>
+                </div>
+                <div class="result-card">
+                    <h4>📈 Ingresos Mensuales</h4>
+                    <div class="value">${formatCurrency(totalIngresosMensuales)}</div>
+                    <div class="subtitle">Proyección de ventas</div>
+                </div>
+                <div class="result-card">
+                    <h4>🎯 Ganancia Mensual</h4>
+                    <div class="value">${formatCurrency(totalGananciasMensuales)}</div>
+                    <div class="subtitle">Ganancia neta proyectada</div>
+                </div>
+                <div class="result-card">
+                    <h4>📊 Margen Promedio</h4>
+                    <div class="value">${promedioMargen.toFixed(1)}%</div>
+                    <div class="subtitle">Margen de ganancia</div>
+                </div>
+                <div class="result-card">
+                    <h4>⏱️ ROI Mensual</h4>
+                    <div class="value">${((totalGananciasMensuales / totalInversion) * 100).toFixed(1)}%</div>
+                    <div class="subtitle">Retorno de inversión</div>
+                </div>
+                <div class="result-card">
+                    <h4>📦 Productos</h4>
+                    <div class="value">${cantidadProductos}</div>
+                    <div class="subtitle">Productos analizados</div>
+                </div>
+            `;
+        }
+        
+        // Mostrar tabla detallada
+        function mostrarTablaDetallada() {
+            const tbody = document.getElementById('tabla-body');
+            let html = '';
+            
+            Object.values(resultados).forEach(resultado => {
+                const { producto, costos } = resultado;
+                html += `
+                    <tr>
+                        <td><strong>${producto.nombre || 'Producto ' + (producto.index + 1)}</strong></td>
+                        <td>${formatCurrency(costos.costoTotalUnitario)}</td>
+                        <td>${formatCurrency(costos.precioVenta)}</td>
+                        <td>${costos.margenReal.toFixed(1)}%</td>
+                        <td>${formatCurrency(costos.gananciaUnitaria)}</td>
+                        <td>${formatCurrency(costos.ingresosMensuales)}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Mostrar gráficos
+        function mostrarGraficos() {
+            mostrarGraficoCostos();
+            mostrarGraficoMargenes();
+        }
+        
+        // Gráfico de distribución de costos
+        function mostrarGraficoCostos() {
+            const ctx = document.getElementById('costosChart').getContext('2d');
+            
+            // Calcular costos promedio
+            let totalFOB = 0, totalFlete = 0, totalImpuestos = 0, totalGastos = 0, totalLocales = 0;
+            let count = 0;
+            
+            Object.values(resultados).forEach(resultado => {
+                const c = resultado.costos;
+                totalFOB += c.fob / resultado.producto.cantidad;
+                totalFlete += (c.flete + c.seguro) / resultado.producto.cantidad;
+                totalImpuestos += (c.arancel + c.iva) / resultado.producto.cantidad;
+                totalGastos += (c.gastosAduanales + c.certificaciones + c.gastosFinancieros + c.gastosAdministrativos) / resultado.producto.cantidad;
+                totalLocales += (c.transporteLocal + c.manipulacion + c.almacenamiento + c.envioCliente + c.empaque + c.publicidad) / resultado.producto.cantidad;
+                count++;
+            });
+            
+            if (count === 0) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Producto FOB', 'Flete y Seguro', 'Impuestos', 'Gastos Aduanales', 'Costos Locales'],
+                    datasets: [{
+                        data: [
+                            totalFOB / count,
+                            totalFlete / count,
+                            totalImpuestos / count,
+                            totalGastos / count,
+                            totalLocales / count
+                        ],
+                        backgroundColor: [
+                            '#3498db',
+                            '#e74c3c',
+                            '#f39c12',
+                            '#9b59b6',
+                            '#27ae60'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de márgenes por producto
+        function mostrarGraficoMargenes() {
+            const ctx = document.getElementById('margenesChart').getContext('2d');
+            
+            const labels = [];
+            const margenes = [];
+            const ganancias = [];
+            
+            Object.values(resultados).forEach(resultado => {
+                labels.push(resultado.producto.nombre || `Producto ${resultado.producto.index + 1}`);
+                margenes.push(resultado.costos.margenReal);
+                ganancias.push(resultado.costos.gananciaUnitaria);
+            });
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Margen (%)',
+                        data: margenes,
+                        backgroundColor: '#3498db',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Ganancia ($)',
+                        data: ganancias,
+                        backgroundColor: '#27ae60',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Margen (%)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Ganancia ($)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Formatear moneda
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+    </script>
+</body>
+</html>
